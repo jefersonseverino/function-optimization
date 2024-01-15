@@ -42,7 +42,7 @@ class GA():
         boundary = self.get_boundaries()
 
         for i in range(self.population_size):
-            individual = [random.uniform(-boundary, boundary) for _ in range(100)]
+            individual = [random.uniform(-boundary, boundary) for _ in range(self.genoma_size)]
             population.append(individual)
         
         return population
