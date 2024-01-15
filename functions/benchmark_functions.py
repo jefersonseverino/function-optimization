@@ -36,7 +36,7 @@ def schwefel(d, x):
 
     sum = 0
     for i in range(d):
-        sum += x[i] * np.sin(math.sqrt(x[i]))
+        sum += x[i] * np.sin(math.sqrt(abs(x[i])))
     
     value = 418.9829 * d - sum
 
