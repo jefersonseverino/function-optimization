@@ -5,15 +5,16 @@ from utils.functions_utils import GLOBAL_TAU, LOCAL_TAU, ACKLEY_A,ACKLEY_B, ACKL
 
 class ES():
 
-    def __init__(self, function_name):
+    def __init__(self, function_name, max_iterations = 1000, population_size=100, selected_parents = 2, number_of_crossovers = 100,
+                 crossover_probability = 0.9, mutation_probability = 0.03, genoma_size = 100):
         self.function_name = function_name
-        self.max_iterations = 1000
-        self.population_size = 100
-        self.selected_parents = 2
-        self.number_of_crossovers = 50
-        self.crossover_probability = 0.9
-        self.mutation_probability = 0.03
-        self.genoma_size = 100
+        self.max_iterations = max_iterations
+        self.population_size = population_size
+        self.selected_parents = selected_parents
+        self.number_of_crossovers = number_of_crossovers
+        self.crossover_probability = crossover_probability
+        self.mutation_probability = mutation_probability
+        self.genoma_size = genoma_size
 
     def generate_initial_population(self):
         population = []
@@ -44,11 +45,15 @@ class ES():
 
     def parent_selection(self, population):
         # Tournament (mais rápido que roulette)
-        selected_individuals = []
-        for _ in range(self.selected_parents*3):
-            selected_individuals.append(random.choice(population))
-        selected_individuals.sort(key=lambda individual : self.fitness(individual), reverse=True)
-        return selected_individuals[:self.selected_parents]
+        parents = []
+        for k in range(self.selected_parents):
+            parent_1 = random.choice(population)
+            parent_2 = random.choice(population)
+
+            parents.append(parent_1)
+            parents.append(parent_2)
+        
+        return parents
 
     def crossover(self, parent1, parent2):
         # intermediate recombination
@@ -93,7 +98,7 @@ class ES():
         return individual
     
     def generate_children(self, parents, population):
-        for i in range(0, self.population_size, 2):
+        for i in range(0, len(parents), 2):
             children = self.crossover(parents[i], parents[i + 1])
             for child in children:
                 mutated_child = self.mutationES(child)
