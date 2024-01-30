@@ -2,6 +2,8 @@ import random
 import numpy as np
 from functions.benchmark_functions import ackley, rastrigin, schwefel, rosenbrock
 from utils.functions_utils import GLOBAL_TAU, LOCAL_TAU, ACKLEY_A,ACKLEY_B, ACKLEY_C, DIMENSIONS, ACKLEY_BOUND, RASTRIGIN_BOUND, SCHWEFEL_BOUND, ROSENBROCK_BOUND
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 class ES():
 
@@ -18,7 +20,7 @@ class ES():
 
     def generate_initial_population(self):
         population = []
-        boundarie = 3 # Change
+        boundarie = self.get_boundaries()
         sigma = 1 # maybe change
 
         for _ in range(self.population_size):
@@ -42,6 +44,18 @@ class ES():
 
         return 1 / (1 + fitness)
 
+    def get_boundaries(self):
+
+        if self.function_name == "ackley":
+            boundary = ACKLEY_BOUND
+        elif self.function_name == "rastrigin":
+            boundary = RASTRIGIN_BOUND
+        elif self.function_name == "schwefel":
+            boundary = SCHWEFEL_BOUND
+        elif self.function_name == "rosenbrock":
+            boundary = ROSENBROCK_BOUND
+        
+        return boundary
 
     def parent_selection(self, population):
         # Tournament (mais rápido que roulette)
@@ -85,6 +99,16 @@ class ES():
     def population_fitness(self, population):
         fitness = [self.fitness(individual) for individual in population]
         return fitness
+    
+    def get_best_fitness_and_best_individual(self, population):
+        fitness = -1
+        best_individual = []
+        for individual in population:
+            if self.fitness(individual) > fitness:
+                fitness = self.fitness(individual)
+                best_individual = individual
+        
+        return fitness, best_individual
 
     def mutationES(self, individual):
         dim = len(individual) - 1
@@ -126,8 +150,31 @@ class ES():
                 sucess += 1
         return sucess
 
+    def plot_graph(self, y, title, x_label, y_label, type='line'):
+        mean = np.mean(y)
+        std = np.std(y)
+
+        print(title)
+        print('Média: ', mean)
+        print('Desvio padrão: ', std)
+
+        sns.set_style("darkgrid")
+        plt.figure(figsize=(12, 4))
+        if type == 'bar':
+            plt.bar(range(1,len(y)+1), y, color='#6141ac')
+        else:
+            plt.plot(y, color='#6141ac', linewidth=2)
+        plt.axhline(y=mean, color='#0097b2', linestyle='--')
+        plt.axhline(y=mean + std, color='#0097b2', linestyle='--')
+        plt.axhline(y=mean - std, color='#0097b2', linestyle='--')
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.title(title)
+        plt.show()
+
     def execute(self):
         population = self.generate_initial_population()
+        exec_fitness = []
 
         for i in range(self.max_iterations):
             print(f"Iteration: {i}")
@@ -141,17 +188,17 @@ class ES():
             num_mutation_sucess = self.mutation_sucess(fitness_before_generation, new_population_fitness, num_of_mutations)
             population = new_population
 
+            current_best_fitness, _ = self.get_best_fitness_and_best_individual(population)
+            exec_fitness.append(current_best_fitness)
 
             if i % 5 == 0:
                 sucess_rate = num_mutation_sucess / num_of_mutations
                 self.evaluate_sigma(population, sucess_rate)
 
-        fitness = -1
-        for individual in population:
-            if self.fitness(individual) > fitness:
-                fitness = self.fitness(individual)
-        
+        self.plot_graph(exec_fitness, "Fitness over time", "iteration", "fitness")
 
+        fitness, best_individual = self.get_best_fitness_and_best_individual(population)
+        print(f"The best individual found is: {best_individual}")
         print(f"Best result : {fitness}")
         
 

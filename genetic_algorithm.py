@@ -7,16 +7,16 @@ import seaborn as sns
 import numpy as np
 class GA():
 
-    def __init__(self, function_name):
-        ## TODO: define better parameters
+    def __init__(self, function_name, mutation_prob = 0.05, max_iterations = 10000, crossover_prob = 0.9, population_size = 1000,
+                 selected_parents = 2):
 
-        self.mutation_prob = 0.05
-        self.max_iterations = 10000
-        self.crossover_prob = 0.9
-        self.population_size = 1000 # Aumentei --> fitness converge mais rápido
-        self.selected_parents = 2
-        self.number_of_crossovers = self.population_size // 2
         self.function_name = function_name
+        self.mutation_prob = mutation_prob
+        self.max_iterations = max_iterations
+        self.crossover_prob = crossover_prob
+        self.population_size = population_size
+        self.selected_parents = selected_parents
+        self.number_of_crossovers = self.population_size // 2
         self.genoma_size = DIMENSIONS
         self.best_fitness = 0
         self.best_fit_count = 0
