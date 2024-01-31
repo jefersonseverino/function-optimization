@@ -20,7 +20,7 @@ def main():
     es_schwefel = ES("schwefel", max_iterations=100, number_of_crossovers=350)
     es_schwefel.execute()
 
-    # es_rosenbrock = ES("rosenbrock", max_iterations=50, number_of_crossovers=350, mutation_probability=0.05)
+    # es_rosenbrock = ES("rosenbrock", max_iterations=50, number_of_crossovers=350, mutation_prob=0.05)
     # es_rosenbrock.execute()
 
 if __name__ == "__main__":

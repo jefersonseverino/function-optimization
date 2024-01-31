@@ -1,41 +1,19 @@
 import random
-from functions.benchmark_functions import ackley, rastrigin, schwefel, rosenbrock
-from utils.functions_utils import ACKLEY_A,ACKLEY_B, ACKLEY_C, DIMENSIONS, ACKLEY_BOUND, RASTRIGIN_BOUND, SCHWEFEL_BOUND, ROSENBROCK_BOUND
+from utils.functions_utils import DIMENSIONS
 import time
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-class GA():
+from evolutionary_algorithm import EA
+class GA(EA):
 
     def __init__(self, function_name, mutation_prob = 0.05, max_iterations = 10000, crossover_prob = 0.9, population_size = 1000,
                  selected_parents = 2):
-
-        self.function_name = function_name
-        self.mutation_prob = mutation_prob
-        self.max_iterations = max_iterations
-        self.crossover_prob = crossover_prob
-        self.population_size = population_size
-        self.selected_parents = selected_parents
-        self.number_of_crossovers = self.population_size // 2
-        self.genoma_size = DIMENSIONS
+        super().__init__(function_name, max_iterations, population_size, selected_parents, crossover_prob, mutation_prob, population_size//2, DIMENSIONS)
+        
         self.best_fitness = 0
         self.best_fit_count = 0
         self.it_best_fitness_list = []
         self.it_fitness_mean_list = []
         self.total_run_times = 3
 
-    def get_boundaries(self):
-
-        if self.function_name == "ackley":
-            boundary = ACKLEY_BOUND
-        elif self.function_name == "rastrigin":
-            boundary = RASTRIGIN_BOUND
-        elif self.function_name == "schwefel":
-            boundary = SCHWEFEL_BOUND
-        elif self.function_name == "rosenbrock":
-            boundary = ROSENBROCK_BOUND
-        
-        return boundary
 
     def generate_initial_population(self):
         population = []
@@ -46,28 +24,6 @@ class GA():
             population.append(individual)
         
         return population
-    
-    def fitness(self, individual):
-        fitness = 0
-
-        if self.function_name == "ackley":
-            fitness = ackley(ACKLEY_A, ACKLEY_B, ACKLEY_C, DIMENSIONS, individual)
-        elif self.function_name == "rastrigin":
-            fitness = rastrigin(DIMENSIONS, individual)
-        elif self.function_name == "schwefel":
-            fitness = schwefel(DIMENSIONS, individual)
-        elif self.function_name == "rosenbrock":
-            fitness = rosenbrock(DIMENSIONS, individual)
-
-        return 1 / (1 + fitness)
-    
-    # def parent_selection(self, population):
-    #     # Roulette
-    #     fitness_list = [self.fitness(individual) for individual in population]
-    #     total_fitness = sum(fitness_list)
-    #     probabilities = [(ind_fitness / total_fitness) for ind_fitness in fitness_list]
-    #     selected_individuals = random.choices(population, probabilities, k=self.selected_parents)
-    #     return selected_individuals
 
     def parent_selection(self, population):
         # Tournament (mais rápido que roulette)
@@ -78,15 +34,6 @@ class GA():
         return selected_individuals[:self.selected_parents]
 
     def crossover(self, parents):
-        ### TODO : implement other types crossovers
-        # Cruzamentos testados:
-        # - Cut and crossfill 
-        # - Aritmético simples (mistura de 1 gene)
-        # - Aritmético com escolha de ponto aleatório (mistura genes a partir de um ponto aleatório)
-        # - Aritmético completo (mistura todos os genes)
-        # - Todas as formas de mistura de genes foram testadas com alpha = 0.5 e alpha aleatório
-        # Todos geraram resultados semelhantes (antes de eu aumentar a população)
-
         [parent1, parent2] = parents
 
         child1 = parent1.copy()
@@ -110,10 +57,6 @@ class GA():
                     individual[i] = random.uniform(-boundary, boundary)
         
         return population
-
-    def survival_selection(self, population):
-        population.sort(key=lambda individual : self.fitness(individual), reverse=True)
-        return population[0:self.population_size]
 
     def check_stopping_criteria(self):
 
@@ -209,26 +152,3 @@ class GA():
         # Fitness médio por iteração
         self.plot_graph(self.it_fitness_mean_list, 'Fitness médio por iteração', 'Iteração', 'Fitness médio')
         
-
-    def plot_graph(self, y, title, x_label, y_label, type='line'):
-        mean = np.mean(y)
-        std = np.std(y)
-
-        print(title)
-        print('Média: ', mean)
-        print('Desvio padrão: ', std)
-
-        sns.set_style("darkgrid")
-        plt.figure(figsize=(12, 4))
-        if type == 'bar':
-            plt.bar(range(1,len(y)+1), y, color='#6141ac')
-        else:
-            plt.plot(y, color='#6141ac', linewidth=2)
-        plt.axhline(y=mean, color='#0097b2', linestyle='--')
-        plt.axhline(y=mean + std, color='#0097b2', linestyle='--')
-        plt.axhline(y=mean - std, color='#0097b2', linestyle='--')
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-        plt.title(title)
-        
-        plt.show()

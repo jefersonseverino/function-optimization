@@ -1,66 +1,29 @@
 import random
 import numpy as np
-from functions.benchmark_functions import ackley, rastrigin, schwefel, rosenbrock
-from utils.functions_utils import GLOBAL_TAU, LOCAL_TAU, ACKLEY_A,ACKLEY_B, ACKLEY_C, DIMENSIONS, ACKLEY_BOUND, RASTRIGIN_BOUND, SCHWEFEL_BOUND, ROSENBROCK_BOUND
-import matplotlib.pyplot as plt
-import seaborn as sns
+from utils.functions_utils import GLOBAL_TAU, LOCAL_TAU
+from evolutionary_algorithm import EA
 
-class ES():
+class ES(EA):
 
     def __init__(self, function_name, max_iterations = 1000, population_size=100, selected_parents = 2, number_of_crossovers = 100,
-                 crossover_probability = 0.9, mutation_probability = 0.03, genoma_size = 100):
-        self.function_name = function_name
-        self.max_iterations = max_iterations
-        self.population_size = population_size
-        self.selected_parents = selected_parents
-        self.number_of_crossovers = number_of_crossovers
-        self.crossover_probability = crossover_probability
-        self.mutation_probability = mutation_probability
-        self.genoma_size = genoma_size
+                 crossover_prob = 0.9, mutation_prob = 0.03, genoma_size = 100):
+        super().__init__(function_name, max_iterations, population_size, selected_parents, crossover_prob, mutation_prob, number_of_crossovers, genoma_size)
 
     def generate_initial_population(self):
         population = []
-        boundarie = self.get_boundaries()
+        boundary = self.get_boundaries()
         sigma = 1 # maybe change
 
         for _ in range(self.population_size):
-            individual = [random.uniform(-boundarie, boundarie) for _ in range(self.genoma_size)]
+            individual = [random.uniform(-boundary, boundary) for _ in range(self.genoma_size)]
             individual.append(sigma)
             population.append(individual)
         
         return population
-    
-    def fitness(self, individual):
-        fitness = 0
-
-        if self.function_name == "ackley":
-            fitness = ackley(ACKLEY_A, ACKLEY_B, ACKLEY_C, DIMENSIONS, individual)
-        elif self.function_name == "rastrigin":
-            fitness = rastrigin(DIMENSIONS, individual)
-        elif self.function_name == "schwefel":
-            fitness = schwefel(DIMENSIONS, individual)
-        elif self.function_name == "rosenbrock":
-            fitness = rosenbrock(DIMENSIONS, individual)
-
-        return 1 / (1 + fitness)
-
-    def get_boundaries(self):
-
-        if self.function_name == "ackley":
-            boundary = ACKLEY_BOUND
-        elif self.function_name == "rastrigin":
-            boundary = RASTRIGIN_BOUND
-        elif self.function_name == "schwefel":
-            boundary = SCHWEFEL_BOUND
-        elif self.function_name == "rosenbrock":
-            boundary = ROSENBROCK_BOUND
-        
-        return boundary
 
     def parent_selection(self, population):
-        # Tournament (mais rápido que roulette)
         parents = []
-        for k in range(self.selected_parents):
+        for _ in range(self.selected_parents):
             parent_1 = random.choice(population)
             parent_2 = random.choice(population)
 
@@ -72,7 +35,7 @@ class ES():
     def crossover(self, parent1, parent2):
         # intermediate recombination
         prob = random.uniform(0, 1)
-        if prob < self.crossover_probability:
+        if prob < self.crossover_prob:
             child1 = []
             child2 = []
 
@@ -92,10 +55,6 @@ class ES():
 
         return [parent1, parent2]
 
-    def survival_selection(self, population):
-        population.sort(key=lambda individual : self.fitness(individual), reverse=True)
-        return population[0:self.population_size]
-
     def population_fitness(self, population):
         fitness = [self.fitness(individual) for individual in population]
         return fitness
@@ -110,13 +69,13 @@ class ES():
         
         return fitness, best_individual
 
-    def mutationES(self, individual):
+    def mutation(self, individual):
         dim = len(individual) - 1
         normal = np.random.normal(0, 1)
         for i in range(dim):
             r = random.uniform(0, 1)
             individual[dim] = np.exp(GLOBAL_TAU*normal + LOCAL_TAU*np.random.normal(0, 1))
-            if r < self.mutation_probability:
+            if r < self.mutation_prob:
                 individual[i] = individual[dim] * np.random.normal(0, 1)
         
         return individual
@@ -125,7 +84,7 @@ class ES():
         for i in range(0, len(parents), 2):
             children = self.crossover(parents[i], parents[i + 1])
             for child in children:
-                mutated_child = self.mutationES(child)
+                mutated_child = self.mutation(child)
                 population.append(mutated_child)
         population = self.survival_selection(population)        
         fitness = [self.fitness(individual) for individual in population]
@@ -149,28 +108,6 @@ class ES():
             if fitness_after[i] > fitness_before[i]:
                 sucess += 1
         return sucess
-
-    def plot_graph(self, y, title, x_label, y_label, type='line'):
-        mean = np.mean(y)
-        std = np.std(y)
-
-        print(title)
-        print('Média: ', mean)
-        print('Desvio padrão: ', std)
-
-        sns.set_style("darkgrid")
-        plt.figure(figsize=(12, 4))
-        if type == 'bar':
-            plt.bar(range(1,len(y)+1), y, color='#6141ac')
-        else:
-            plt.plot(y, color='#6141ac', linewidth=2)
-        plt.axhline(y=mean, color='#0097b2', linestyle='--')
-        plt.axhline(y=mean + std, color='#0097b2', linestyle='--')
-        plt.axhline(y=mean - std, color='#0097b2', linestyle='--')
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-        plt.title(title)
-        plt.show()
 
     def execute(self):
         population = self.generate_initial_population()
