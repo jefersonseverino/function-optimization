@@ -15,6 +15,11 @@ class EA(ABC):
         self.mutation_prob = mutation_prob
         self.number_of_crossovers = number_of_crossovers
         self.genoma_size = genoma_size
+
+        self.best_fitness = 0
+        self.it_best_fitness_list = []
+        self.it_fitness_mean_list = []
+        self.total_run_times = 1
         
     def get_boundaries(self):
         if self.function_name == "ackley":
@@ -27,6 +32,9 @@ class EA(ABC):
             boundary = ROSENBROCK_BOUND
         
         return boundary
+    
+    def get_answer(self):
+        return 0
     
     def fitness(self, individual):
         fitness = 0
@@ -45,7 +53,24 @@ class EA(ABC):
     def survival_selection(self, population):
         population.sort(key=lambda individual : self.fitness(individual), reverse=True)
         return population[0:self.population_size]
-    
+
+    def update_data(self, population):
+        fitness_list = [self.fitness(individual) for individual in population]
+        self.it_fitness_mean_list.append(sum(fitness_list) / len(fitness_list))
+        self.it_best_fitness_list.append(self.fitness(population[0]))
+
+    def check_stopping_criteria(self, iteration, epsilon=0.005):
+        if abs(self.it_best_fitness_list[-1] - self.best_fitness) < epsilon:
+            self.best_fit_count += 1
+        else:
+            self.best_fit_count = 0
+            self.best_fitness = self.it_best_fitness_list[-1]
+
+        if self.best_fit_count >= 100:
+            return True
+        
+        return False
+
     def plot_graph(self, y, title, x_label, y_label, type='line'):
         mean = np.mean(y)
         std = np.std(y)
@@ -68,6 +93,46 @@ class EA(ABC):
         plt.title(title)
         plt.show()
     
+    def execute(self):
+        num_converged_executions = 0
+        exec_fit_mean = []
+        exec_best_individual = []
+        exec_num_iterations = []
+        exec_best_fit = []
+
+        for _ in range(self.total_run_times):
+            population, num_iterations = self.find_solution()
+
+            exec_best_individual.append(population[0])
+            exec_num_iterations.append(num_iterations)
+            exec_best_fit.append(self.it_best_fitness_list[-1])
+            exec_fit_mean.append(self.it_fitness_mean_list[-1])
+            
+            num_converged_executions += 1 if (1-self.it_best_fitness_list[-1] < 0.0001) else 0
+
+        print('Número de execuções convergidas: ', num_converged_executions)
+
+        ## Informações sobre todas as execuções
+        # Melhor indivíduo por execução
+        self.plot_graph(exec_best_fit, 'Melhor indivíduo por execução', 'Execução', 'Fitness', 'bar')
+
+        # Iterações por execução
+        self.plot_graph(exec_num_iterations, 'Número de iterações por execução', 'Execução', 'Número de iterações', 'bar')
+
+        # Média do fitness por execução
+        self.plot_graph(exec_fit_mean, 'Fitness médio por execução', 'Execução', 'Fitness médio', 'bar')
+        
+        ## Informações sobre a última execução
+        # Melhor indivíduo da última execução
+        print('Melhor indivíduo da última execução: ', exec_best_individual[-1])
+
+        # Melhor indivíduo por iteração
+        self.plot_graph(self.it_best_fitness_list, 'Melhor indivíduo por iteração', 'Iteração', 'Fitness')
+
+        # Fitness médio por iteração
+        self.plot_graph(self.it_fitness_mean_list, 'Fitness médio por iteração', 'Iteração', 'Fitness médio')
+        
+
     @abstractmethod
     def generate_initial_population(self):
         pass
@@ -84,10 +149,7 @@ class EA(ABC):
     def crossover(self, population):
         pass
 
-    # @abstractmethod
-    # def find_solution(self):
-    #     pass
-
     @abstractmethod
     def execute(self):
         pass
+

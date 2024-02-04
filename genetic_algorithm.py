@@ -2,17 +2,29 @@ import random
 from utils.functions_utils import DIMENSIONS
 import time
 from evolutionary_algorithm import EA
+
+'''
+a. Representação das soluções (indivíduos): 
+    Lista de números reais de tamanho igual ao número de dimensões
+b. Função de Fitness: 1 / (1 + f(x))
+c. População (tamanho, inicialização): 
+    2000, inicialização aleatória
+d. Processo de seleção de pais: 
+    Seleção dos 2 melhores indivíduos de 6 aleatórios
+e. Operadores Genéticos (Recombinação e Mutação): 
+    Recombinação aritmética e mutação gaussiana
+f. Processo de seleção por sobrevivência: 
+    Seleção dos 2000 melhores indivíduos
+g. Condições de término do Algoritmo Evolucionário :
+    100 iterações sem melhora ou 5000 iterações
+'''
 class GA(EA):
 
-    def __init__(self, function_name, mutation_prob = 0.05, max_iterations = 10000, crossover_prob = 0.9, population_size = 1000,
+    def __init__(self, function_name, mutation_prob = 0.005, max_iterations = 5000, crossover_prob = 0.9, population_size = 2000,
                  selected_parents = 2):
         super().__init__(function_name, max_iterations, population_size, selected_parents, crossover_prob, mutation_prob, population_size//2, DIMENSIONS)
         
-        self.best_fitness = 0
         self.best_fit_count = 0
-        self.it_best_fitness_list = []
-        self.it_fitness_mean_list = []
-        self.total_run_times = 3
 
 
     def generate_initial_population(self):
@@ -26,7 +38,6 @@ class GA(EA):
         return population
 
     def parent_selection(self, population):
-        # Tournament (mais rápido que roulette)
         selected_individuals = []
         for _ in range(self.selected_parents*3):
             selected_individuals.append(random.choice(population))
@@ -48,13 +59,11 @@ class GA(EA):
         return [child1, child2]
 
     def mutation(self, population):
-        ### TODO : implement other types of mutation
-
         boundary = self.get_boundaries()
         for individual in population:
             for i in range(self.genoma_size):
                 if random.random() < self.mutation_prob:
-                    individual[i] = random.uniform(-boundary, boundary)
+                    individual[i] = random.gauss(0,1)
         
         return population
 
@@ -79,7 +88,6 @@ class GA(EA):
 
     def find_solution(self):
         initial_time = time.time()
-        ### TODO
         self.best_fitness = 0
         self.best_fit_count = 0
         self.it_best_fitness_list = []
@@ -112,43 +120,3 @@ class GA(EA):
         print(f"Time elapsed: {total_time}")
 
         return population, i
-
-    def execute(self):
-        num_converged_executions = 0
-        exec_fit_mean = []
-        exec_best_individual = []
-        exec_num_iterations = []
-        exec_best_fit = []
-
-        for _ in range(self.total_run_times):
-            population, num_iterations = self.find_solution()
-
-            exec_best_individual.append(population[0])
-            exec_num_iterations.append(num_iterations)
-            exec_best_fit.append(self.it_best_fitness_list[-1])
-            exec_fit_mean.append(self.it_fitness_mean_list[-1])
-            
-            num_converged_executions += 1 if (1-self.it_best_fitness_list[-1] < 0.0001) else 0
-
-        print('Número de execuções convergidas: ', num_converged_executions)
-
-        ## Informações sobre todas as execuções
-        # Melhor indivíduo por execução
-        self.plot_graph(exec_best_fit, 'Melhor indivíduo por execução', 'Execução', 'Fitness', 'bar')
-
-        # Iterações por execução
-        self.plot_graph(exec_num_iterations, 'Número de iterações por execução', 'Execução', 'Número de iterações', 'bar')
-
-        # Média do fitness por execução
-        self.plot_graph(exec_fit_mean, 'Fitness médio por execução', 'Execução', 'Fitness médio', 'bar')
-        
-        ## Informações sobre a última execução
-        # Melhor indivíduo da última execução
-        print('Melhor indivíduo da última execução: ', exec_best_individual[-1])
-
-        # Melhor indivíduo por iteração
-        self.plot_graph(self.it_best_fitness_list, 'Melhor indivíduo por iteração', 'Iteração', 'Fitness')
-
-        # Fitness médio por iteração
-        self.plot_graph(self.it_fitness_mean_list, 'Fitness médio por iteração', 'Iteração', 'Fitness médio')
-        
