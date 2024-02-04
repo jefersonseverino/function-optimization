@@ -20,6 +20,7 @@ class EA(ABC):
         self.it_best_fitness_list = []
         self.it_fitness_mean_list = []
         self.total_run_times = 1
+        self.best_fit_count = 0
         
     def get_boundaries(self):
         if self.function_name == "ackley":
@@ -59,7 +60,7 @@ class EA(ABC):
         self.it_fitness_mean_list.append(sum(fitness_list) / len(fitness_list))
         self.it_best_fitness_list.append(self.fitness(population[0]))
 
-    def check_stopping_criteria(self, iteration, epsilon=0.005):
+    def check_stopping_criteria(self, epsilon=0.005):
         if abs(self.it_best_fitness_list[-1] - self.best_fitness) < epsilon:
             self.best_fit_count += 1
         else:
@@ -108,7 +109,8 @@ class EA(ABC):
             exec_best_fit.append(self.it_best_fitness_list[-1])
             exec_fit_mean.append(self.it_fitness_mean_list[-1])
             
-            num_converged_executions += 1 if (1-self.it_best_fitness_list[-1] < 0.0001) else 0
+            epsilon = 0.005
+            num_converged_executions += 1 if (1-self.it_best_fitness_list[-1] < epsilon) else 0
 
         print('Número de execuções convergidas: ', num_converged_executions)
 
@@ -150,6 +152,6 @@ class EA(ABC):
         pass
 
     @abstractmethod
-    def execute(self):
+    def find_solution(self):
         pass
 

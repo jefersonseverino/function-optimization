@@ -20,11 +20,9 @@ g. Condições de término do Algoritmo Evolucionário :
 '''
 class GA(EA):
 
-    def __init__(self, function_name, mutation_prob = 0.005, max_iterations = 5000, crossover_prob = 0.9, population_size = 2000,
+    def __init__(self, function_name, mutation_prob = 0.05, max_iterations = 5000, crossover_prob = 0.9, population_size = 2000,
                  selected_parents = 2):
         super().__init__(function_name, max_iterations, population_size, selected_parents, crossover_prob, mutation_prob, population_size//2, DIMENSIONS)
-        
-        self.best_fit_count = 0
 
 
     def generate_initial_population(self):
@@ -66,25 +64,6 @@ class GA(EA):
                     individual[i] = random.gauss(0,1)
         
         return population
-
-    def check_stopping_criteria(self):
-
-        epsilon = 0.0001
-        if abs(self.it_best_fitness_list[-1] - self.best_fitness) < epsilon:
-            self.best_fit_count += 1
-        else:
-            self.best_fit_count = 0
-            self.best_fitness = self.it_best_fitness_list[0]
-
-        if self.best_fit_count >= 100:
-            return True
-        
-        return False
-
-    def update_data(self, population):
-        fitness_list = [self.fitness(individual) for individual in population]
-        self.it_fitness_mean_list.append(sum(fitness_list) / len(fitness_list))
-        self.it_best_fitness_list.append(self.fitness(population[0]))
 
     def find_solution(self):
         initial_time = time.time()
