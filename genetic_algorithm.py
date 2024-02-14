@@ -14,13 +14,13 @@ d. Processo de seleção de pais:
 e. Operadores Genéticos (Recombinação e Mutação): 
     Recombinação aritmética e mutação gaussiana
 f. Processo de seleção por sobrevivência: 
-    Seleção dos 2000 melhores indivíduos
+    Seleção dos 200 melhores indivíduos
 g. Condições de término do Algoritmo Evolucionário :
     100 iterações sem melhora ou 5000 iterações
 '''
 class GA(EA):
 
-    def __init__(self, function_name, mutation_prob = 0.05, max_iterations = 5000, crossover_prob = 0.9, population_size = 2000,
+    def __init__(self, function_name, mutation_prob = 0.05, max_iterations = 5000, crossover_prob = 0.9, population_size = 250,
                  selected_parents = 2):
         super().__init__(function_name, max_iterations, population_size, selected_parents, crossover_prob, mutation_prob, population_size//2, DIMENSIONS)
 
@@ -70,6 +70,7 @@ class GA(EA):
         self.best_fitness = 0
         self.best_fit_count = 0
         self.it_best_fitness_list = []
+        self.it_fitness_mean_list = []
 
         population = self.generate_initial_population()
         

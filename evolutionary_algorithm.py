@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import time
 class EA(ABC):
     def __init__(self, function_name, max_iterations, population_size, selected_parents, crossover_prob, mutation_prob, number_of_crossovers, genoma_size):
         self.function_name = function_name
@@ -19,7 +19,7 @@ class EA(ABC):
         self.best_fitness = 0
         self.it_best_fitness_list = []
         self.it_fitness_mean_list = []
-        self.total_run_times = 1
+        self.total_run_times = 30
         self.best_fit_count = 0
         
     def get_boundaries(self):
@@ -100,9 +100,11 @@ class EA(ABC):
         exec_best_individual = []
         exec_num_iterations = []
         exec_best_fit = []
-
+        time_list = []
         for _ in range(self.total_run_times):
+            start_time = time.time()
             population, num_iterations = self.find_solution()
+            time_list.append(time.time() - start_time)
 
             exec_best_individual.append(population[0])
             exec_num_iterations.append(num_iterations)
@@ -113,8 +115,10 @@ class EA(ABC):
             num_converged_executions += 1 if (1-self.it_best_fitness_list[-1] < epsilon) else 0
 
         print('Número de execuções convergidas: ', num_converged_executions)
-
+        
         ## Informações sobre todas as execuções
+        # Tempo de execução
+        self.plot_graph(time_list, 'Tempo de execução por execução', 'Execução', 'Tempo (s)', 'bar')
         # Melhor indivíduo por execução
         self.plot_graph(exec_best_fit, 'Melhor indivíduo por execução', 'Execução', 'Fitness', 'bar')
 

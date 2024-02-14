@@ -123,6 +123,9 @@ class ES(EA):
         return sucess
 
     def find_solution(self):
+        self.it_best_fitness_list = []
+        self.it_fitness_mean_list = []
+        
         population = self.generate_initial_population()
 
         for i in range(self.max_iterations):
