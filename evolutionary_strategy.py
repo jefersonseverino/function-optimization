@@ -8,17 +8,17 @@ from evolutionary_algorithm import EA
     Lista de números reais de tamanho igual ao número de dimensões
   b. Função de Fitness:
     1 / (1 + f(x))
-  c. População (tamanho, inicialização, etc):
+  c. População (tamanho, inicialização):
     100, inicialização aleatória
   d. Processo de seleção:
     Seleção aleatória de 350 pares de pais
   e. Operadores Genéticos (Recombinação e Mutação):
     Recombinação intermediária
+    Mutação não correlacionada com σi com 3% de probabilidade por gene
   f. Processo de seleção por sobrevivência
-    Seleção dos 100 melhores indivíduos
+    Seleção dos 100 melhores indivíduos (µ+λ)
   g. Condições de término do Algoritmo Evolucionário
     100 iterações sem melhora ou 10000 iterações
-    #TODO MELHORAR CONDIÇÃO DE PARADA
 '''
 
 class ES(EA):
@@ -30,7 +30,7 @@ class ES(EA):
     def generate_initial_population(self):
         population = []
         boundary = self.get_boundaries()
-        sigma = 1 # maybe change
+        sigma = 1
 
         for _ in range(self.population_size):
             individual = [random.uniform(-boundary, boundary) for _ in range(self.genoma_size)]
@@ -49,7 +49,6 @@ class ES(EA):
         return parents
 
     def crossover(self, parent1, parent2):
-        # intermediate recombination
         prob = random.uniform(0, 1)
         if prob < self.crossover_prob:
             child1 = []
@@ -125,6 +124,7 @@ class ES(EA):
     def find_solution(self):
         self.it_best_fitness_list = []
         self.it_fitness_mean_list = []
+        self.best_fit_count = 0
         
         population = self.generate_initial_population()
 

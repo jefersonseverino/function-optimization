@@ -1,22 +1,21 @@
 import random
 from utils.functions_utils import DIMENSIONS
-import time
 from evolutionary_algorithm import EA
 
 '''
-a. Representação das soluções (indivíduos): 
-    Lista de números reais de tamanho igual ao número de dimensões
-b. Função de Fitness: 1 / (1 + f(x))
-c. População (tamanho, inicialização): 
-    2000, inicialização aleatória
-d. Processo de seleção de pais: 
-    Seleção dos 2 melhores indivíduos de 6 aleatórios
-e. Operadores Genéticos (Recombinação e Mutação): 
-    Recombinação aritmética e mutação gaussiana
-f. Processo de seleção por sobrevivência: 
-    Seleção dos 200 melhores indivíduos
-g. Condições de término do Algoritmo Evolucionário :
-    100 iterações sem melhora ou 5000 iterações
+    a. Representação das soluções (indivíduos): 
+        Lista de números reais de tamanho igual ao número de dimensões
+    b. Função de Fitness: 1 / (1 + f(x))
+    c. População (tamanho, inicialização): 
+        2000, inicialização aleatória
+    d. Processo de seleção de pais: 
+        Seleção dos 2 melhores indivíduos de 6 aleatórios
+    e. Operadores Genéticos (Recombinação e Mutação): 
+        Recombinação aritmética e mutação gaussiana
+    f. Processo de seleção por sobrevivência: 
+        Seleção dos 200 melhores indivíduos
+    g. Condições de término do Algoritmo Evolucionário :
+        100 iterações sem melhora ou 5000 iterações
 '''
 class GA(EA):
 
@@ -66,7 +65,6 @@ class GA(EA):
         return population
 
     def find_solution(self):
-        initial_time = time.time()
         self.best_fitness = 0
         self.best_fit_count = 0
         self.it_best_fitness_list = []
@@ -92,11 +90,5 @@ class GA(EA):
             
             if self.check_stopping_criteria():
                 break
-
-
-        total_time = time.time() - initial_time
-
-        print(f"Best fitness is: {self.it_best_fitness_list[-1]}")
-        print(f"Time elapsed: {total_time}")
 
         return population, i
